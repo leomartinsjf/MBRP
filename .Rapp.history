@@ -1,0 +1,137 @@
+help(hist)
+x <- rnorm(100000)
+x
+hist(x)
+help()
+# Libraries#
+library(rpart)#
+library(rpart.plot)#
+library(rattle)#
+library(caret)#
+# Artigo 3 #
+preditores <- read.csv("estudo 3/preditores.csv", na.strings = "-")#
+preditores <- preditores[, -1]#
+preditores <- preditores[, -16]#
+preditores$aprovado <- factor(preditores$aprovado, levels = c("Não","Sim"))#
+preditores$idade <- as.numeric(preditores$idade)#
+preditores$idade <- ifelse(preditores$idade < 18 | preditores$idade > 80, NA, preditores$idade)#
+# CREATE DATA PARTITION#
+trainIndex <- createDataPartition(preditores$aprovado, p = .8,#
+                                  list = FALSE,#
+                                  times = 1)#
+train <- preditores[trainIndex,]#
+final <- preditores[-trainIndex,]
+library(rpart)#
+library(rpart.plot)#
+library(rattle)#
+library(caret)
+# Artigo 3 #
+preditores <- read.csv("estudo 3/preditores.csv", na.strings = "-")#
+preditores <- preditores[, -1]#
+preditores <- preditores[, -16]#
+preditores$aprovado <- factor(preditores$aprovado, levels = c("Não","Sim"))#
+preditores$idade <- as.numeric(preditores$idade)#
+preditores$idade <- ifelse(preditores$idade < 18 | preditores$idade > 80, NA, preditores$idade)#
+# CREATE DATA PARTITION#
+trainIndex <- createDataPartition(preditores$aprovado, p = .8,#
+                                  list = FALSE,#
+                                  times = 1)#
+train <- preditores[trainIndex,]#
+final <- preditores[-trainIndex,]
+load("/Library/Frameworks/R.framework/Versions/3.2/Resources/library/d3Network/Meta/package.rds")
+bfactor()
+load("/Users/Leonardo/CES-D_SubstanceAbuse/Data.RData")
+require(foreign) # Read data stored SPSS#
+require(car) #Recode Variables#
+require(psych) #Psychometrics#
+require(lavaan) #Confirmatory and SEM#
+require(semPlot) # Plots for SEM#
+require(semTools) # Comparing SEM models#
+require(ggplot2) # Plots#
+require(Hmisc)#
+```#
+#
+```{r}#
+#Setting Directory#
+setwd("~/MBRP_R")#
+#
+#Importing SPSS file .sav#
+base.dat <- read.spss("Base.sav", to.data.frame = T, use.missings = T)#
+#
+#Checking the base#
+#View(base.dat)#
+#
+#Variable List#
+#names(base.dat)#
+#
+#Recode Missing Data 888#
+for (i in c(1:350)) {#
+base.dat[,c(i)]<-sub("888", "NA", base.dat[,c(i)], ignore.case = FALSE, perl = FALSE, fixed = F, useBytes = FALSE)#
+}#
+#
+#Recode Missing Data 777#
+for (i in c(1:350)) {#
+base.dat[,c(i)]<-sub("777", "NA", base.dat[,c(i)], ignore.case = FALSE, perl = FALSE, fixed = F, useBytes = FALSE)#
+}#
+#
+#Creating a subset for analysis without cases excluded in our baseline#
+MBRP <- base.dat[grep("CORRI", base.dat$ETAPA), ]#
+#
+#Selecting variable for this work #
+MBRP_baseline <- MBRP[ ,c(9,11,12,19,24,245:252,265,266,295:298,299:311,325,326,347:350)]#
+#
+#Recode Mindfulness FFMQ into High and Low#
+MBRP_baseline$FFMQgroup[MBRP_baseline$FFMQTOTAL< 120] <- "Baixo"#
+MBRP_baseline$FFMQgroup[MBRP_baseline$FFMQTOTAL>= 120] <- "Altos"#
+as.factor(MBRP_baseline$FFMQgroup)#
+#
+#Dataframe#
+MBRP_baseline <- MBRP_baseline[,c(39,1,14,33,34,16,17,20,21,22:32,35:38)]#
+#
+MBRP_baseline <- subset(MBRP_baseline, !is.na(MBRP_baseline$FFMQgroup))#
+#
+#Checking the base#
+#View(MBRP_baseline)#
+#
+#Variable List#
+#names(MBRP_baseline)#
+```#
+```{r}#
+#
+```#
+#
+```{r}#
+#Descriptive#
+#
+#FFMQ Groups (High and Low based on median cut off)#
+summary(as.factor(MBRP_baseline$FFMQgroup))#
+cbind(round(prop.table(sort(table(MBRP_baseline$FFMQgroup), decreasing = TRUE)),2))#
+#
+##Gender#
+summary(MBRP_baseline$X.1Gênero)#
+cbind(round(prop.table(sort(table(MBRP_baseline$X.1Gênero), decreasing = TRUE)),2))#
+#
+##Educational Study#
+summary(MBRP_baseline$X.7.1RECODEEscolaridade)#
+cbind(round(prop.table(sort(table(MBRP_baseline$X.7.1RECODEEscolaridade), decreasing = TRUE)),2))#
+#
+##Meditation#
+summary(MBRP_baseline$X.11.1Vocêpraticameditação)#
+cbind(round(prop.table(sort(table(MBRP_baseline$X.11.1Vocêpraticameditação), decreasing = TRUE)),2))#
+#
+#Age#
+summary(MBRP_baseline$X.2Idade)#
+cbind(round(prop.table(sort(table(MBRP_baseline$X.2Idade), decreasing = TRUE)),2))#
+```#
+```{r}#
+#Comparing Means#
+## Multiple t-tests for time, age, frail between genders.#
+lapply(MBRP_baseline[,c("Escore", "FAGERTRONTOTAL")], function(x) t.test(x ~ MBRP_baseline$FFMQgroup, var.equal = TRUE))#
+#
+res.multi.t.tests <-#
+    multi.tests(fun = t.test,#
+                df = MBRP_baseline,#
+                vars = c("Escore", "FAGERTRONTOTAL"),#
+                group.var = ""FFMQgroup"",#
+                var.equal = TRUE)#
+res.multi.t.tests
